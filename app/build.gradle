@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 25
@@ -23,14 +24,44 @@ android {
     }
 }
 
+buildscript {
+
+    ext {
+        kotlin_version = '1.0.5-3'
+        support_version = '25.0.1'
+        firebase_version = '9.4.0'
+        rxjava_version = '1.1.9'
+    }
+
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    // Support libs
+    compile 'com.android.support:appcompat-v7:25.0.1'
+
+    // Kotlin
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.anko:anko-common:0.9"
+
+    // Rx
+    compile 'io.reactivex:rxandroid:1.2.1'
+    compile "io.reactivex:rxjava:$rxjava_version"
+    compile "com.artemzin.rxjava:proguard-rules:$rxjava_version.0"
+    compile 'io.reactivex:rxkotlin:0.60.0'
+
+    // Test dependencies
+    testCompile 'junit:junit:4.12'
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.0.1'
-    testCompile 'junit:junit:4.12'
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 repositories {
     mavenCentral()

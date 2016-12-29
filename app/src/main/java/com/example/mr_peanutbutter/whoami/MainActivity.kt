@@ -6,19 +6,24 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : Activity(), SensorEventListener {
 
     private var mSensorManager: SensorManager? = null
     private var accelerometer: Sensor? = null
     private var magnetometer: Sensor? = null
-    private var currentOrientat
-    private var ORIENTATION_UP = 1
-    private var ORIENTATION_DOWN = 2
-    private var ORIENTATION_MIDDLE = 3
+    private var currentOrientation: Orientation = Orientation.MIDDLE
+    private var currentMove: Orientation = Orientation.NONE
+
+    enum class Orientation {
+        UP,
+        DOWN,
+        MIDDLE,
+        NONE
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +36,7 @@ class MainActivity : Activity(), SensorEventListener {
 
         initListeners()
     }
+
 
     fun initListeners() {
         mSensorManager!!.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST)
@@ -71,11 +77,18 @@ class MainActivity : Activity(), SensorEventListener {
         } else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
             mGeomagnetic = event.values
 
-            if (isTiltDownward) {
-
-                Log.d("test", "downwards")
-            } else if (isTiltUpward) {
-                Log.d("test", "upwards")
+            if (isTiltDownward && currentMove != Orientation.DOWN) {
+                currentMove = Orientation.DOWN
+                onOrientationChanged(Orientation.DOWN)
+                vCurrentMove.text = "MOVE : " + currentMove.toString()
+            } else if (isTiltUpward && currentMove != Orientation.UP) {
+                currentMove = Orientation.UP
+                vCurrentMove.text = "MOVE : " + currentMove.toString()
+                onOrientationChanged(Orientation.UP)
+            } else if (isTiltNormal) {
+                currentMove = Orientation.MIDDLE
+                vCurrentMove.text = "MOVE : " + currentMove.toString()
+                onOrientationChanged(Orientation.MIDDLE)
             }
         }
 
@@ -142,7 +155,7 @@ class MainActivity : Activity(), SensorEventListener {
                     val objPitchZeroPointTwoResult = objZeroPointTwo.compareTo(objPitch)
                     val objPitchZeroPointTwoNegativeResult = objPitch.compareTo(objZeroPointTwoNegative)
 
-                    if (roll < 0 && (objPitchZeroResult > 0 && objPitchZeroPointTwoResult > 0 || objPitchZeroResult < 0 && objPitchZeroPointTwoNegativeResult > 0) && inclination > 30 && inclination < 40) {
+                    if ( inclination > 30 && inclination < 40) {
                         return true
                     } else {
                         return false
@@ -197,5 +210,80 @@ class MainActivity : Activity(), SensorEventListener {
 
             return false
         }
+    val isTiltNormal: Boolean
+        get() {
+            if (mGravity != null && mGeomagnetic != null) {
+                val R = FloatArray(9)
+                val I = FloatArray(9)
 
+                val success = SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic)
+
+                if (success) {
+                    val orientation = FloatArray(3)
+                    SensorManager.getOrientation(R, orientation)
+
+                    pitch = orientation[1]
+                    roll = orientation[2]
+
+                    inclineGravity = mGravity!!.clone()
+
+                    val norm_Of_g = Math.sqrt((inclineGravity[0] * inclineGravity[0] + inclineGravity[1] * inclineGravity[1] + inclineGravity[2] * inclineGravity[2]).toDouble())
+                    inclineGravity[0] = (inclineGravity[0] / norm_Of_g).toFloat()
+                    inclineGravity[1] = (inclineGravity[1] / norm_Of_g).toFloat()
+                    inclineGravity[2] = (inclineGravity[2] / norm_Of_g).toFloat()
+                    val inclination = Math.round(Math.toDegrees(Math.acos(inclineGravity[2].toDouble()))).toInt()
+
+                    val objPitch = pitch
+                    val objZero = 0.0
+                    val objZeroPointTwo = 0.2
+                    val objZeroPointTwoNegative = -0.2
+
+                    val objPitchZeroResult = objPitch.compareTo(objZero)
+                    val objPitchZeroPointTwoResult = objZeroPointTwo.compareTo(objPitch)
+                    val objPitchZeroPointTwoNegativeResult = objPitch.compareTo(objZeroPointTwoNegative)
+
+                    Log.d("NORMAL TILT?", " inclination : $inclination")
+
+                    if (inclination > 80 && inclination < 100) {
+                        return true
+                    } else {
+                        return false
+                    }
+                }
+            }
+
+            return false
+        }
+
+    private fun onOrientationChanged(move: Orientation) {
+        if (move == Orientation.DOWN) {
+            currentOrientation = Orientation.DOWN
+            onFailed()
+        } else if (move == Orientation.UP) {
+            currentOrientation = Orientation.UP
+            onPass()
+        } else if (move == Orientation.MIDDLE) {
+            currentOrientation = Orientation.MIDDLE
+            onNormal()
+        }
+
+        vOutput.text = "OUTPUT : " + currentOrientation.toString()
+        vCurrentDirection.text = "DIRECTION : " + currentOrientation.toString()
+    }
+
+    private fun onNormal(){
+//        TODO: SHow next thing
+    }
+
+    private fun onPass() {
+//        TODO: Point +1
+//        TODO: Add to right answers
+    }
+
+    private fun onFailed() {
+//        TODO: Point -1
+//        TODO: Add to failed answers
+    }
+
+    private
 }

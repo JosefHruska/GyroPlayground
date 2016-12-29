@@ -10,8 +10,32 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.mr_peanutbutter.whoami.MainActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
     <TextView
+        android:id="@+id/vOutput"
+        android:textSize="50sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:text="OUTPUT" />
+
+    <TextView
+        android:id="@+id/vCurrentMove"
+        android:textSize="50sp"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="MOVE" />
+
+    <TextView
+        android:id="@+id/vCurrentDirection"
+        android:textSize="50sp"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DIRECTION" />
+    </LinearLayout>
+
 </RelativeLayout>
